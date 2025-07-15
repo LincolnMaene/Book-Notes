@@ -1,0 +1,409 @@
+•no unreachable statements
+•controlling expression should not be invariant
+	usually signs of a logic error
+	code becomes redundant
+•No Dataflow anomalies
+	no data (e.g var) should be written but never read
+		or written 2x without being read
+	ineficient, usually sign of an error
+p 20
+• return value of a function should be used always
+	disregarding return value is often sign of a programming error
+		use [[nodiscard]] where appropriate
+	cast to void if you intentionaly mean to ignore the value
+		consider use of std::ignore
+• Every declared variable, and named function param should be used
+	otherwise it becomes noise 
+	often indicative of missing statements
+	use [[maybe unused]] to indicate a variable is intentionaly unused
+• Evey type with limited visibility should be used at least once
+• Every function with limited visibility should be used at least once
+• floating point arithmetic is a tool of last resort
+• No undefined behavior ever
+
+p 30
+
+•don't use deprecated features
+•no critical unspecified behavior
+	critcal means it affects observable behavior of the machine
+•no trigraphs
+	removed from language in c++17
+•no nested comments
+	e.g /* /* */ */
+	not supported by language, non portable compiler support
+•do not comment out sectons of code	
+	dead code, may inadvertently lead to nested comments.
+•no line splicing
+	may lead to unintentional code removal.
+•Avoid identifier names that may collide with std lib
+	e.g starting a variable name with double underscore
+•only use \ to denote escape sequences
+•octal and hex escape sequences should be terminated
+	same for universal character names
+	very confusing otherwise
+•don't use octal constants
+•suffix unsigned litteral constants
+
+p40
+•Always use 2 ll for long constant literals
+	a single l could be signed or unsigned, ambiguity
+•Do not concatenate strings with varying prefixes (e.g wide strings and regular strings)
+	behavior is not defined by the C++ standard
+•Do not declare functions inside block scope, or initilize objects at block scope with redundant parentheses
+	avoids most vexing parse anti-pattern, confusions btwn function declarations and object initialization
+•extern array should be declared with size
+	lets static analyzer work better
+	allows you to perform checks for consistency
+•only  declaration at global scope should be namespaces, main func,and extern C
+	makes lookup easier
+	reduces chance that order of header file inclusion will affect program behavior due to name collision
+•only the program entry function should be called main()
+	lots of potential confusion otherwise for developpers
+•follow the one definition rule
+•all declarations of a function or var should have same type
+	e.g extern var in file1 and extern var in file2
+		undefined behavior to have different types
+p.50
+•code used to implement an entity should appear only once
+	except for inline implementation which must be identical in every translation unit
+•no non inline definitions in a header file
+	violates 1 definition rule when the object 
+•variables in inner scope should not hide variables in outer scope
+	lots of confusion, surprising behavior
+•function in derived class should not hide function in base class
+	lots of confusion, lookup more difficult, surprising behavior
+•no unqualified lookup for any name being brought in from the base class
+	potential for lots of confusion otherwise
+•any function or object with external linkage should be put in header file
+	makes it explicit that external linkage is intended, 
+		if access is intended in single translation unit
+			declare it with internal linkage (static, namespace etc...)
+•make internal linkage explicit
+	declare it in an unamed namespace
+	
+p.60
+•do not use any mutable global variables
+•do not return pointer or ref to local varibles with automatic storage duration
+•reference qualify any function returning a reference or pointer to an internal data member of the class
+•any alias for a type should be consistent in the whole program
+•do not use standard signed or unsigned int, short etc
+	their max width is not defined by the standard
+p. 70
+•no conversions from type bool
+	except a bit field of size 1 bit (common idiom for hardware register)
+•no conversions to type bool
+	weird erros/behavior introduced by reinterpreting any any non-zero value as true
+	messes up your interface with APIs like POSIX that do not use bool return values
+•do not use the numerical value of characters
+	the meaning of char numerical values depends on aspects the program cannot control, like encoding being used
+	use stl functions to determine e.g a character is lowercase
+	use std::char_traits for hashing
+•operand of bitwise or and shift operations should be of appropriate width, to avoid surprises from integral promotion
+	static_cast to the width (e.g uint32_t) where necessary
+•integral promotion and arithmetic operations btw types should be apropritate
+	make sure e.g addition is btw values of the same type. static cast where approrpiate.
+•assignements between numeric types shall be appropriate
+	basically make sure they are of the same type. static cast where necessary
+	
+p. 80
+•nullptr shall be the only form of null pointer constant
+•do not pass c style arrays to function accepting pointers
+	the array decays to a pointer, more error prone since size, bound context is lost
+	use std::array
+*beware conversion from function to function pointer, be explicit
+	if u want to check address use &
+	static cast to function ptr as necessary
+		e.g to distinguish btw overloads of a function
+•do not capture this in non-transient lambdas
+	if the lifetime of the obj has expired, UB likely to happen
+•capture variables expliticitly in non-transient lambdas
+	makes values passed by ref or ptr easier to identify so object lifetime concerns are not overlooked
+	p.90
+•only cast base class to derived class using dynamic cast
+	undefined behavior
+•no c style casts
+	c++ style casts are just safer
+•don't const cast pointers or references
+	UB if object was created const
+	can cause hardware exceptions
+	can cause optimizations to break program
+•don't cast function pointers (or pointers to data members) to any other type
+	leads to undefined behavior
+•don't use reinterpret_cast except in templates
+	genearally results in undefined behavior
+•never cast between pointers and ints, makes tools unrealiable in tracking pointers (analysers, sanitizers)
+	unless you use std::intptr or std::uintptr
+		guarantees there is no overflow
+•Do not use typeid with a polymorphic class (e.g has virtual function)
+	may not be resolved at runtime and side effects occur
+	p.100
+•No recursion either directly or indirectly
+	unless you explicitly set a stack usage limit so u know worst case
+• do not pass classes with non trivial constructor/destructor/move/copy to ellipsis
+	behavior usually not defined by the standard
+•don't use unary operator with unsigned integrals
+	you don't really know what you'll get
+•don't do pointer arithmetic unless you have no choice
+	lots of security pitfalls, memory pitfalls and undefined behavior
+•unless they point to same type, no substraction between 2 pointers
+	undefined behavior
+•unless pointing to same array, no comparison between pointers
+	unspecified behavior
+	use std::less, std::end, std::greater etc.. instead of <=
+		less error prone
+•do not use result of assignment operator
+	less readable, introduces side effects in a statement
+•Do not use comma operator
+	nightare for readability
+•explicity type conversion should not be its own statement]
+	nightmare for readability, easily confused with e.g scoped ressource management
+•every if else if should have an else,even if said ese is empty
+	defensive programming, lets maintainer no default case was considered
+•every switch statement needs to be appropriate
+	have a default case
+	every case terminated by either: break, continue, return, goto, throw, 
+		a call to [[noreturn]] function, or [[fallthrough]] attribute
+•legacy for statements should be simple
+	error prone, usually unecessary as stl provides optimized algos for most use cases
+p121
+•for range initializer should only have one function call
+	very suble undefined behavior related to object lifetimes
+•do not use the goto statement
+	leads to unstructured code, hard to reason about
+•if you must use the goto statement, it must be in a surrounding block and later in the program
+	do not just into a nested block (e.g the inside of a for loop)
+	no goto up
+•a function declared as [[noreturn]] should never return
+	undefined behavior
+	abort and execptions do not count as returns
+•function with non-void return type should return a value on all paths
+	undefined behavior
+•a statement should only declare 1 variable, except for structured bindings
+	the type of the obj declare can become tricky to decipher otherwise
+•const qualify refs and functions unless they may be modified or are not object types
+	makes program easier to reason abt, less likely a developer will falsely assume a functin call
+		does not modify object statement
+•use volatile appropriately
+	none for parameters, return types, structured binding, member functions and local variables
+p.130
+
+•declare enums with explicit underlying type
+	prevents nasty surprises by making type safety easier
+•do not use unscoped enums, except as members of a class
+	more type safety, less name collisions/polution, les developer confusion
+•do not use the value of unscoped enums without explicit underlying type
+	implimentation defined. any conversion is a roll of the dice
+•no unamed namespaces in header files
+	everything in a unamed namespace will be unique wherever the header file is included
+		makes program much more difficult to reason about
+•do not use asm declaration
+	conditionally supported, implementation defined
+•do not use C style arrays,	use std:::array and std::stringview instead
+	size context never lost, more memory safety
+•your declaration should never have more than 2 levels of pointer indirection
+	anymore than that makes the code very difficult to understand
+•every variable should be initialized to its real value (the one it has before u need to read it)
+	introduces an extra program state, makes program harder to reason abt, more errors likely
+•no value in a object should be read before it has been set
+	undefined behavior
+•the val of implicitely declared enum should be unique within the enum list
+	lots of confusions otherwise, make any duplication in your enum explicit
+
+p.140
+•bit fields should have appropriate type
+	signed or unsinged int, enum explicit signed or unsigned int
+	not doing this leads to implimentation defined behavior, or misuse of tools intended by the language for other things
+•a signed bit field should never be of size 1
+	make it unsigned, avoids pitfalls related to representation of signed values
+•no unions
+	software engineering is a lonely vocation, we must respect that
+	very easy to introduce Undefined Behavior
+	use std variant (c++ 17) instead
+•no multiple/virtual inheritance
+	very difficult to reason abt the correctness of a program using virtual inheritance
+•if u must use virtual inheritance, do it consistently
+	the entire level of inheritance should be virtual 
+•use the overide, virtual and final key words appropriately in derived classes
+•default arguments should have same value in derived class functions
+	lots of confusion otherwise btw calls made using parent type ptr and child type ptr
+p.145
+•function parameters should never change names in derived classes
+	defeats the point of naming variables, documenting their purpose
+•only compare virtual function pointers to null
+	standard does not specify behavior
+p.150
+•all nonstatic data members should either be all private or all public (struct)
+	what's the point of having classes otherwise?
+•a class should either be unmovable/copyable, move only, or copy and move
+	other combinations are difficult to get right, language rules very subtle for analysis
+•if a class has a custom move or copy ctor, it should also have a custom destructor
+•base classes should either be unmovable or protected non-virtual destructor
+•user provided constructors should have the appropriate signature
+	e.g taking param by non-const reference should be avoided
+		developer expectation is copy is not modified
+p155
+•derived classes should explicitly call base class constructor in initializer list
+	and that of every virtual base class it might have
+	prevents confusions about which constructor is called/with which values, in base class
+•every conversion operator and constructor callable with 1 argument should be marked explicit
+	avoids confusions resulting from implicit conversions
+p160
+•A constructor should completely initialize an object
+	lots of nasty suprises otherwise since object state is only partialy guaranteed
+•Only use initializer list if it is the only constructor
+	easily confused with constructors takeing parameters of the same typeid
+•assignment and move operators should handle self assignements
+	nasty suprise,counter to developer expectation if behavior is different
+p165
+•do not overload logical and or opertator
+	they become function calls, meaning things like short circuit eval no longer work
+		nasty surprise for developer
+•do not overload the address of operator
+	taking the address of incomplete type with & operator is undefined(pre cpp11),unspecified(after cpp11)
+	developper confusion since dereferencing address may no longer return object itself
+	use std::addressof() when you want an address
+		does not allow undefined or unspecified behavior
+•do not implement symetrical operators as member functions
+	e.g <=, ==, >=, +, -
+	ensures both sides of the operand are treated the same
+	more type safety by preventing implicit conversions
+•do not expicitely specialize templated member functions
+	never chosen in overload resolution over matching non-template member function
+		potential for lots of developer confusion
+		
+p 170
+• exception objects should not be pointer type
+	if memory is dynamically allocated for exception, ambiguous which function is responsible for releasing it
+•empty throw statement should only be found within the catch handler
+	easily causes implementation defined behavior
+•catch your exception by const reference
+	slicing (information unique to derived class is lost) if you catch by value
+•do not refer to non-static data member in catch block of constructor or destructor
+	undefined behavior
+p  175
+•mark all exception unfriendly functions as no_excep
+	e.g destructors
+		leads to all sorts of undefined behavior
+•noexecpt functions  (explicit or implicit) should not propagate exceptions
+
+p180
+• program terminating functions should not be called
+	stack not unwound, destructors not called, system state likely undesirable after
+• line following # should be a valid preprocessor macro
+	compiler is out the window, can't detect error, leading to unexpected behavior
+• do not use function like macros, except for things like __Line__ and ##
+	what's the point of having functions and templates if you're not going to use them
+• only use #undef for macros defined in the same file
+	macros donot follow the usual scoping rules, complex use cases easily introduced with lots of ambiguity	
+• use the "defined" operator correctly
+	only works with identifier e.g #if defined(Identifier)
+		UB otherwise
+		
+p 185 
+• all #else #elif and #endif should be in the same file as the #if	
+	reason why has been left as an exercise to the reader
+• all identifier used in controlling block #if of preprocessor macro should be resolved prior to being defined prior 
+	to being used
+		e.g use #if defined (identifier) before any conditional in #if block like #if identifier > 28
+		compiler will otherwise assume in some cases that value is 0
+			may not be what the developer expects
+• take precautions not to include any header file more than once
+	reason why has been left as an exercise to the reader
+• the include directive should be followed by a file
+	what's the point of using c++ if you're not going to include files
+• no include path/to/file in header files	
+	implementation defined behavior
+•do not use # or ## preprocessor operators
+	unspecified behavior
+• no mixed use macro #
+	very confusing, different bevior depending on how macro is used
+p 190
+•use paranthesis to make sure macros expand only as expected when operator precedence comes into play
+	you expect arguments to macros to behave like functions but they DO NOT
+•don't use pragma
+	not defined by the standard, relying on particular compiler implementation, portability hit
+•don't use atoi, atof, atol, atoll
+	they're horrible, prone to subtle undefined behavior. use strtol, strtof
+•do not use c style string handling functions, even those taking size like strncmp, strncpy etc...
+	use c+++ alternative, very difficult to write correct programs in C
+	use std::string_view instead of const char*, gives proper string handling.
+	
+p 195
+•do not use system()
+	common source of security vulnerability, lots of undefined behavior associated with it
+•do not use offsetof macro
+	gives access to underlying representation of object
+	what's the point of OOP if you have no respect for encapsulataion
+•do not use dynamic memory allocation
+	unless you absolutely have to
+		then document extensively why and how
+•if you must use dynamic memory allocation, no raw pointers
+	extremely error prone, best to manage memory automaticaly
+	
+p 200
+
+•do not use advanced memory management
+	very easy to introduce undefined behavior
+	if you must use advanced memory management confine it to the lowest level of programming, well abstracted away
+•either define both a sized and unsized operator delete, or don't define any operator delete
+	c++ standard does not specificy which version of the operator delete the compiler will select
+•do not delete pointer to imcomplete type
+	undefined behavior of destructor or dealloc function is non-trivial
+	
+p 205
+•do not use variadic arguments or ellipsis
+	almost always unnecessary
+	very easy to indroce undefined behavior
+	often destroys type checking
+•donot use jump functions
+	almost always unnecessary
+	very easy to introduce undefined behavior
+		e.g by skipping calls to non-trivial destructor
+•do not use signals execpt function calls with SIG_IN as 2nd parameter
+	generally results in undefined or implementation defined behavior	
+•do not use assert macro with constant expression
+	except assert(false) for state that should not be reached
+	assert is a last resort, to be used for errors only detectable at runtime
+	uses static_assert() instead if the result of the expression is known at compile time
+•errno should only be ever set to zero
+	the std::library already uses errno with non-zero values
+		possible clashes
+	c++ has better ways to detect errors
+•use make_shared and make_unique
+	ensures no exception can be thrown before smart pointer takes ownership
+
+p 210
+
+•do not use the character handling functions in cctype header, e.g std::is_digit()
+	lots of undefined behavior, use std::locale
+•do not setlocal() or std::local::global
+	introduces data races involving the std library that are very difficult to guard against
+•pointers returned by getevn and strerror should never be modified,
+	undefined behavior
+	
+• do not use ponters returned by getevn and strerror, time functions, or locale functions after subsequent calls
+	standard does not require original ponter to contain updated value
+		library can use buffer
+p 215
+• do not create vector of bools
+	behaves very differently from normal vector, some functions not available (data())
+	special concurency pitfalls
+•predicates should not have persistent side effects and should be const
+	e.g custome comparators passed to sort functions etc...
+•only call std::move with mutable objects
+	doesn't work on anything const
+•only use forward referrences T&& with std::forward<T> when passing to functions
+	getting this rigth otherwise is quite complex
+•do not use an object after static_cast, std::forward, or std::move
+	the standard does not define the state of object bc of potential move semantics 
+	except for unique_ptr
+	
+p 220
+• the results of std::remove, std::remove_if, empty, std::unique should be used
+	usually the sign of a error that they are not
+• do not use c style input output functions
+	lots of undefined, unspecified and implementation defined behavior
+	use c++
+•reads and writes to a file stream need to be separated by positioning operation (e.g seekg)
+	undefined behavior otherwise
+	
