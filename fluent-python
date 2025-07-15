@@ -1,0 +1,222 @@
+p 0
+• take advantage of special methods like __getitem__() and __len___
+	allows your custom types to take advantage of standard library features
+	avoids reinventing the wheel
+• avoid calling special methods directly, let the interpreter call them instead
+•other useful special functions __repre__, __bool__, __add__, __mult__
+	works a lot like operator overloading in c++
+p.20
+•complex is better than complicated
+	list comprehension is a good example
+	complex yea, but also more explicit/readable to the initiated
+•you can initialize a collection using list comprehension
+	but a genexp will save memory bc it generates items 1 by 1, not build a whole list to give a constructor
+p30
+•no need to create a class just to name the fields
+	tuple unpacking can make all this super easy
+•need an imutable list? use a tuple
+	better for performace, space too
+	avoids error prone use of indexes
+•just like c++ use tuple to let function return many arguments
+•use * to capture excess arguments
+•use * to unpack an argument to a function call
+•match case semantics allow pattern matching
+	a serious improvement over switch statements
+•you can provide type information to pattern matching
+•use slicing it's very powerful
+•even the start of slice is really an end
+	lst[3:] requests everything after index 3
+	lst[:3] everything before index 3
+•use strides, very powerful. can be negative to return items in reverse
+•custom obj can use slices if __getItem__ and  set__item is provide
+	allows even multidimensional slices
+p.51
+•you can assign to slices and delete slices
+•you can add and multiply sequences
+	useful for example in creating nested lists'
+•you can change what += does by implementing the special function __iadd__
+•list.sort() is inplace
+•sometimes a list is not the answer
+	if a list only contains numbers use array.array	
+		as efficient as C
+p.60
+• built in type memoryview lets you share data between structures without 1st copying
+•you can use a list as a quue or stack using the pop() and append() functions
+	but just like in c++ it's cheaper to use collections.deque
+•python dictionaries are extremely optimized
+•you can marge dictionaries in python
+p80
+•pattern matching  very useful for hadling things like json files
+•user defined types are hashable by default
+•dict is unoredered by default but you can use orderedict
+•you can use the dictionary .get function with a default argument 
+	to avoid raising exeption for invalid keys
+•dict.setdefault() is another alternative for handling missing keys
+p.90
+•after python 3.6 build in dict is orderedict
+	main reason to use ordered_dict is backward compatibility
+•python has chainmaps
+	useful for implementing scopes
+•python has a built in counter
+	i wish c++ did too
+•shelves map objects to pickle binary format
+	has serious drawbacks, make sure pickle fits your use case
+•it is better to subclass userdict rather than dict
+	dict requires more complext implementation (e.g overrides)
+•mappingproxy can be used as stand in for constant dict
+•remember that python sets exist
+	python sets can give u union, intersection, difference, symetric difference
+	similar to dict comprehension, we can do set comprehension
+p.110
+•bytes have almost all the same methods as strides
+•can create bytes from hex string
+•especially useful for encoding and decoding
+•you can't discover  the encoding of a byte sequences
+	you must be told via e.g header
+	but you can guess using statistics with some accuracy
+p.130
+•best practice for handling files is the decode bytes to string as soon as possible for input
+	decode to bytes as late as possible for output
+	computer programs are not very good at handling bytes
+•beware default encoding, all sorts of subtle issues
+	if you are encoding be intentional
+•safer to normalize text input by keyboard before saving
+	hidden characters can break things otherwise
+•nearly 300 cases in which str.casefolding() and str.lower() will return different result
+	buyers beware
+•python can do locale aware comparisions of strings
+•setlocale when the process starts, never change it
+	change is global, catastrophic
+p150
+•python has reliable is_numeric and is_decimal functions
+	i wish c++ did too
+•1 character does not always equal 1 byte because of unicode shenanigans
+•data class pattern= collection of fields with little or no extra functions
+	python has a module to help with it dataclassbuilde like collections.nametuple
+•use nametuple instead of custom data classes
+	avoids a ton of boilerplates.
+•as_dict lets you return a dictionary from data class builder
+p170
+•type hints are not enforced by the compiler at all
+	documentation that can be verified by ide and type checker
+•type hints do not affect behavior of programs
+	but can enhance some built in functions like datacla.anotations\
+•think carefully before using unsafe hash
+•default factory allows @dataclass to have somethig like a constructor with zero parameters
+p 190
+•data classes are a code smell, think carefully about wether you need to make behavior internal
+	what's the point of classes if you don't have data and behavior in a single unit
+•__match__args lets your class work with positional pattern matching
+•the correct analogy for variable is labels not boxes
+•the correct way to compare objects for identiy in python is with keywords "is not" 
+	== relies on __eq__ implementation to compare the value inside the object
+• is operator is also faster than == bc it cannot be overloaded
+•tuples are immuatable but the objects contained within a tuple might not be
+	reason why some tuples are unhashable
+•easiest way to copy object in python is use the build in constructor
+	beware that copies are shallow by default tho
+p.210
+•shallow copies are problematic with embeded objects	
+	only copies references to said object meaning changing copy changes OG
+•the way to make deep compy is with "from copy import deepcopy"
+	this may still not behave entirely as you want (e.g copying singletons)
+		so you can customize by implementing __copy__ and __deepcopy__
+•python is neither pass by value or reference but pass by sharing
+•avoid mutable object as default parameters .eg param = []
+	the default list is an actual object in python, it can be modified by the program
+•None should be your default arg, then u can decide what to do if the param is None
+•follow the principle of least astonishment when designing interfaces
+	beware side effects
+	often best to copy mutable parameters rather than alias them
+•del does not delete objects only references
+	may cause object to be deleted if last ref is deleted
+•python functions are 1st class objects
+•p 230
+•higher order functions
+	function that takes another function as argument or retuns a function	
+		e.g sorted() can take a key arg which is a function like built in len
+•lambdas in python have to be pure functions
+	no side effects
+	always return same output for a given input
+•implementing a __call___ function is all it takes to make an object behave like a function
+•python parameter handling extremely flexible
+•python supports functional programming to some extent
+•since 3.8 you can define a function as requiring positional parameters only
+p 250
+•you can make mypy more strict, forcing all functions to have type hints
+•a type is a set of values and functions applicable to said values
+•practicality beats purity
+p 270
+•you can use the optional type hint to deal with None as defaults
+•avoid creating functions that return union types
+	forces user to check type of return at run time
+•you can do type ints for tuples
+•postel's law: be conservative in what you send, be liberal in what you accept
+•protocol type basically allows you to have interfaces without abstract base class
+•you can sort anything that implements __it__
+p290
+•there is a callable type
+•there is a noreturn type for functions that should never return
+	like sys.exit()
+•type checking has drawbacks
+	false positives/negative, some loss of expressiveness
+•decorators let you modify behavior at run time, replace one function with another, change it's behavior etc.
+	powerful stuff
+p 310
+•python variable scope rules are strange compared to c++
+	e.g interpreter creates a new variable in local scope instead of overriding global var
+		you need the global keyword to get c++ like behavior
+•closures are functions capable of holding state information
+	interesting consequence of functions being first class objects
+•free variables are kept in the __code__ atribute of the functions
+• operators like += can run afoul of pythons scope rule due to assignment
+	var += 1 is var = var + 1
+	to get around this in closures you need the nonlocal keyword
+•python's built in @cache decorator can do memoization
+p 330
+•you can make a decorator accept arguments by using a decorator factory
+•you can create class backed clocked decorator
+•most design patterns become either invisible or simpler in dynamic languages like python	
+	due to built in features like iterators
+p 350
+•i am starting to understand just how powerful first class functions are
+	you can had functions to a list and iterate calling each
+•comand pattern, like strategy, can be simplified by passing functions as arguments
+p 370
+•@classmethod decorator allows a function to be called directly from class name
+	like static functions in c++
+	@static_method does the same but without passing the class as first positional argument
+•to make class hashable implement __hash__ and __eq__
+•you can make data members read only by using @property decorator
+	make getters with the same name as data members
+	do this to safely implement a hash method
+•to support pattern matching implement __match__args
+•don't make object pythonic for the hell of it, only if the user cares (e.g library code)
+•python has name mangling as alternative to private data members
+	lots of pythonistas hate this tho
+•you can save memory with the __slot__ attribute
+•to support weak references you need __weakref__
+p391
+•if you write to an instance attribute that does not exist
+	python creates said instance attribute, but only for this specific instance
+	no other object of the class
+p. 400
+•best practice for sequences is to pass to constructor an iterable argument
+	**args are dicey
+•protocols are informal interfaces (only in documentation not code)
+	e.g sequence protocol requires implementiing __len__ and __getitem__	
+		then your custom object can work like a python sequence (e.g do slicing)
+•is_a relationship in duck typing has nothing to do with inheritance, just behavior
+	e.g implementing a particular protocol
+•get__attributes__ can help you easily do read only access, better than decorators
+	but you need a __set__attribute__ to get consistent behavior
+		to prevent object customization via writes to non-existent fields
+•functool_reduce is called so bc it reduces a series of values to a single one
+	a bit like std:reduce
+p 420
+•it is sometimes ok to only implement part of a protocol
+	python supports that 
+•static protocols have explicit definitions
+	a typing.protocol subclass
+	still a class never needs to declare by name what protocols it implements
+•
