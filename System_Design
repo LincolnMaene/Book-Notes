@@ -1,0 +1,1254 @@
+Chapter 1: System Requierements
+
+ 
+
+              Must remove all possible ambuiguities before begining the design, especially non-functional
+
+             
+
+              Functional Req: how a system should function/behave
+
+                                                                                      what it should do
+
+                             Usually captured in the form of use cases
+
+                                           if the user does x, system does y
+
+                                                          try to capture 2 use cases, maybe 3
+
+                                          
+
+                                           clarify who the customers are, various groups etc
+
+             
+
+              NonFunctional Req: qualities of the system
+
+                            
+
+                             reliability, scalability, performance, security, availability etc..
+
+                            
+
+Availability (system uptime, 99% systems was unaivalaible 1% of the year, 1% of requests etc..)
+
+              need to avoid single points of failure
+
+              load balancing helps
+
+              protect from atypical client behavior
+
+              detect and recover from failures
+
+              have a disaster recovery plan
+
+              built in/pipeline tests
+
+              when things break do root cause analysis
+
+              at least 1x a year assess system readiness to face catastrophes
+
+              have game days
+
+                             simulate catastrophe and test team/system responses
+
+              service level objective
+
+                             number you commit to on availability, cloud providers have one
+
+                            
+
+Fault tolerance: aim is 0 downtime, as oppose to minimum downtime of high availability
+
+              enables system to continue operations when 1 or more faults have occured
+
+              chaos engineering:
+
+                             deliberately introduce faults to make sure the system knows how to recover
+
+reliability: high availability + correctness + response time
+
+resilience: ability to recover from unexepected failures quickly
+
+scalability: ability of system to handle growing load
+
+              can be auto (e.g cloud computing) or manual
+
+              Elasticity: ability to aquire and release ressources as needed
+
+                             reduces cost
+
+                             implies scalability
+
+              scaling horizantal is virtually unlimited
+
+                             but also more complex since it introduces a whole host of problems like load balancing, server discovery, request routing (same client-->same server)
+
+              scaling vertically is limited, e. geventually spending the money on a high end pc is not worth it anymore
+
+                             also introduces single point of failure
+
+ 
+
+performance:
+
+              time and/or rate at which a process happens
+
+              avg latency is misleading
+
+                             better to measure in terms of percentiles
+
+                                           reduce tail latencies
+
+                                          
+
+durability: ability to keep data even in the face of faults
+
+              backups help : full, incremental, differential
+
+              diferential:
+
+                             fast to create
+
+                                           but now need 2 backups to restore, last full backup + diferential
+
+                             also grows in size over time
+
+              incremental:
+
+                             like differential but more frequent
+
+                             more complicated to restore: last full backup + all incrementals
+
+              checksums can be used to validate file integrity
+
+              there are many raid levels:
+
+                             raid 0 : good performance (read/write is parrallel), reduces durability
+
+                                           data written alternatively on disks,
+
+                             raid 1 : data mirrored on another disk
+
+                            
+
+              replication: instead of disk level, copy at software level
+
+                             when data is written to 1 machine, written to other machines
+
+                             can by synchronous or asynchronous
+
+                            
+
+                             also increases availability and read throughput
+
+ 
+
+consistency:
+
+             
+
+              ability of various replicas to stay in sync, receive and transmit the same data to the user
+
+              Replicas help hugely with read scalability
+
+              beware propagation time
+
+              linearability: storng but not strictest consistency, all clients read the same data, more or less instant propagation
+
+                             slow
+
+              eventual consistency
+
+                             faster, but takes time for all clients to read the same data
+
+                             plays nice with availability
+
+                            
+
+Maintanability, security, cost:
+
+              maintainability:
+
+                             how to deploy chages quickly
+
+                             how to rollback bad changes safely
+
+              cost: 3 parts (engineering cost, maintainance cost, and ressources)
+
+                             testing, patching, configuration etc...automation reduces cost
+
+                             hardware
+
+                             outside i.e (cloud) services can reduce software cost contra inhouse solution
+
+                             storage cost reduced by elasticity for e.g
+
+                             proper choice btw hot and cold storage
+
+                             must include virtual money
+
+                                           cost incured by internal teams providing services to each other
+
+                            
+
+              security:
+
+                             firewall vs api gateway
+
+                             are we protected from common attacks (ddos, sql injection)
+
+                             CIA triad
+
+                                           confidentiality: data protected from unauthorized users
+
+                                           integrity: data is not corrupted/lost
+
+                                           availability: data is available to authorized users when they need it
+
+
+Chapter 2: Help of hardware
+
+ 
+
+              Regions
+
+                             a discrete group of availability zones
+
+              availability zones
+
+                             1 of more discrete data centers
+
+              data centers
+
+                             building with lots of racks
+
+                             own power, security
+
+              racks
+
+                             every rack has its own network and power source
+
+                             may want servers in different racks to increase availability
+
+                                           or opposite to reduce latency
+
+              servers:
+
+                             need to buy servers optimized for what we're doing
+
+                                           Disk size
+
+                                           Network IO
+
+                                                          most difficult to scale
+
+                                           CPU:
+
+                                                          Easiest to scale
+
+                                           GPU
+
+                                           Memory :
+
+                                                          database
+
+             
+
+              Physical servers: not most popular way to run applications
+
+                             typically for a single customer
+
+                                           gives complete control over hardware/software stack
+
+                                           solves noisy neibhor problem
+
+                                           high physical security
+
+                             tradeof:
+
+                                           expensive
+
+              virtual machines:
+
+                             emulation of physical computer
+
+                             benefits:
+
+                                           cheap
+
+                                           high security
+
+                             tradeof
+
+                                           noisy neighbor problem
+
+              containers:
+
+                             lightway standalone package of software             
+
+                                           includes everything needed to run applications
+
+                             virtualizes OS, not hardware, can run multiple OS on same hardware
+
+                             advamtages
+
+                                           more scalable, lightweight
+
+                                           faster to start than vms
+
+                                           less secure than VM
+
+              serverless:
+
+                             run code without managing servers (that is done by the cloud provider)
+
+                             only pay for what you use
+
+                                           if not using, cost is 0
+
+                             makes releases, iteration, faster
+
+                             scaling easier
+
+                             cons:
+
+                                           technical limitations dictated by cloud provider
+
+                                           elasticity can backfire if user base grows unexpectedly, serverless bill gets out of control
+
+ 
+
+chapte 3: fundamentals of scalable, reliable, fast communication
+
+ 
+
+              Synchronous communication:
+
+                             client waits for response to come back
+
+              asynchronous communication:
+
+                             client doesn't wait for response
+
+                             typically bc client doesn't care about response
+
+                             or wants to make several requests in parralel
+
+                             typically involves a messaging system in btw
+
+              2 primary types of asynch comm:
+
+                             message queuing:
+
+                                           only a single comsumer for message at a time for published
+
+                                           Various patterns
+
+                                                          task queue
+
+                                                          callback qeue (to reply to messages, like sending notifications for a request recieved)
+
+                                                          priority queues
+
+                                                          claim check: useful for large messages
+
+                                                                        put message in shared storage
+
+                                                                        only send location in shared storage in message
+
+                             publish/subcribe:
+
+                                           message is published to all consumers (subscribers), those who don't care discard
+
+ 
+
+network protocols:
+
+ 
+
+              TCP:
+
+                             connection oriented:
+
+                                           handshake process
+
+                                                          send, reply, send, connection established
+
+                             acknowledgements
+
+                                           allows to know if you need to retransmit packets
+
+                             sequence numbers
+
+                                           allows you to guarantee order of data, avoid corruption
+
+                             checksums
+
+                             congestion/flow control
+
+                                           both for senders and reciever
+
+                             prioritizes reliability over all else
+
+              UDP:
+
+                             popular for video for eg.
+
+                             no verification of readiness or acknowledgements
+
+                             order is not guaranteed
+
+                             no congestion or flow control
+
+                             still has checksums though
+
+                             can multicast (broadcasting to all intended recipients only)
+
+                             simpler and faster to implement than TCP
+
+              HTTP:
+
+                             also response/request protocols
+
+                             older version use TCP as underlying
+
+                             newer versions use QUIC:
+
+                                           reduced latencies, built on top of UDP
+
+                             all connections considered persistent unless proven otherwise
+
+                             does multiplexing
+
+                                           multiple requests sent over tcp without waiting for response
+
+                            
+
+              blocking vs non-blocking IO:
+
+                             ephemeral ports:
+
+                                           allow client multiple connections to client
+
+                             blocking:
+
+                                           the thread is suspended untill the operation is complete
+
+                                           you need many threads in order not to waste time/ handle multiple connections
+
+                             non-blocking:
+
+                                           server does not wait, complete request when possible
+
+                                           you can use a single thread to handle multiple connections
+
+                                           cost of connection is cheap
+
+                                          
+
+                             communication models:
+
+                            
+
+                                           thread per connection:
+
+                                                          dedicated worker thread for every connection
+
+                                           thread per request:
+
+                                                          non-blocking, threads no longer map 1 to 1 to connections
+
+                                                          easiest to implement, maintain, most popular
+
+                                                                        downside, threads are expensive, ressource constrained environments beware\
+
+                                                                        good for cpu bound tasks
+
+                                           event loop
+
+                                                          also non-blocking
+
+                                                          asynchronous processing from a queue
+
+                                                          just 1 thread
+
+                                                          more diffcult to implement/maintain but more resilient in face of traffic spike, large files
+
+                             concurrency vs parralism
+
+                                           concurrency is just switching really fast btw threads
+
+                             parrallelism:
+
+                                           many cpus executing simultaneously
+
+                                          
+
+Data encoding formats:
+
+             
+
+              payload is just a sequence of bytes from the perspective of messaging system:
+
+                             but consumer and producer need to agree on how to serialize/encode, deserialize/decode data
+
+                                           Textual format (e.g JSON):
+
+                                                          human readable, widely supported
+
+                                           Binary format:
+
+                                                          better when throughput is large
+
+                                                          easier to do various optimizations
+
+                                           both formats can be optimized tho:
+
+                                                          for e.g by introducing a SCHEMA
+
+                                                                        for e.g remove some texts by corresponding numbers in JSON
+
+                                                                        but need to worry about backward/forward compatibility as SCHEMA changes
+
+                                                                       
+
+Message Acknowledgement:
+
+              Fire and forget:
+
+                             don't check for acknowledgement, assume it is recieved (for e.g based on timeout before retry)
+
+                                           acknowledgement isn't free, tradeof is throughput vs durability (e.g video vs email)
+
+                                           retries may result in duplicates
+
+Deduplication cache
+
+              cache: data structure in memory
+
+                             unlike hash table, has limited size, evicts entries automatically
+
+              local/private cache:
+
+                             on the same machine as the app
+
+              external cache:
+
+                             on a server, shared by multiple machines
+
+                             slower and harder to maintain than local cache but more scalable, fault tolerant
+
+              data can be added explicitly or implicitly:
+
+                             when a get operation for an absent key happens
+
+                                           can happen synchronously or asynchronously
+
+              cache eviction policies:
+
+                             size based
+
+                             time based
+
+                                           more latancy, can be helped by data refreshed
+
+                                                          return existing value, then in background refresh expired value
+
+Metadata cache patterns:
+
+              cache-aside:
+
+                             cache does not interact with data store directly
+
+                             not suitable if latency is critical
+
+                                           can be mitigated by proper expiration value
+
+                             prone to data cache stampede
+
+                            
+
+              read through cache
+
+                             cache is responsible for reading data store in case of cache miss
+
+                             like write through simplifies code
+
+                                           may contain lots of rarely used entries
+
+                                           whole system goes down if cache goes down
+
+                             helps mitigate stampede problem
+
+              write through cache
+
+                             cache and data store write updated synchronously
+
+              write behind pattern
+
+                             cache writes to data store asynchronously
+
+                             vulnerable to data loss if for e.g cache crashes
+
+Chapter 5: Distributed Systems
+
+              how to store messages in memory:
+
+                             linked lists
+
+                             circular/ring buffer
+
+                                           avoid arrays
+
+                                                          push_front() is expensive
+
+                                                         
+
+              Full and empty queue problems
+
+                             full : msg arrive faster than consumed
+
+                                           options: drop msgs
+
+                                                                                      rate limiting
+
+                                                                                                     every producer has a quota for e.g num of msgs per second allowed to send
+
+                                                                                      load shedding
+
+                                                                                                     just drop msg based on some metric like cpu used
+
+                                                                                      need to notify producer that msgs are being droped
+
+                                                                                                     so they can for e.g buffer msgs
+
+                                                                                                     or throw exception to some other layer
+
+                                                                                                     or send to another msg broker
+
+                                                                        slow down producer
+
+                                                                                      backpressure: force producer to slow down
+
+                                                                        scale consumer up/out
+
+                                                                                      elastic scaling
+
+                                                                                                     add more threads to the pool if queue is full
+
+                             empty : msg consumed faster than arrive
+
+                                           problem is an empty queue is a waste of ressources
+
+                                           broker is useful
+
+                                                          pushes msgs to consumer only when a msg appears in queue
+
+                                          
+
+              Tip: start with a single machine before generalizing your solution to a distributed system,
+
+                             monolith to microservices for e.g
+
+                             involves interviewer in conversation
+
+                             generates ideas for yourself as you think in terms of threads, libraries etc...
+
+                            
+
+Producer consumer model: very common  design pattern for multithreaded apps
+
+              producer threads vs consumer threads
+
+              Blocking Queue
+
+                             blocks put op when full
+
+                             blocks take op when empty
+
+              Long polling
+
+                             msg broker blocks take/read request when waiting for msgs to arrive in queue
+
+              without blocking queue:
+
+                             you can call wait/notify on producer/consumer to coordinate
+
+                             you can also use counting semaphores
+
+Thread pool
+
+              threads:
+
+                             pros: more throughput
+
+                             con: more expensive
+
+                                           memory/cpu (starvation) wise
+
+              thread pool addresses problem through reuse
+
+                             we don't need to keep creating threads
+
+                                           threads are already created
+
+                             cons:
+
+                                           hard to know ideal size of thread pool
+
+                                                          if tasks are cpu boud : number of cpus
+
+                                                          io bound tasks: need to account for wait + compute time in addition to cpu core numbers
+
+                                                                        need profiling
+
+                                           long running tasks can take over the thread pool
+
+                                                          need to have maximum time a task can keep a thread before requeuing
+
+                             graceful shutdown:
+
+                                           need to decide what to do to task in progress when thread stops
+
+                                                          thread pool stops accepting new tasks
+
+                                                          thread waits (up to a max) for tasks to complete
+
+                                                          terminate thread pool
+
+                                                         
+
+batch computing model:
+
+              works well when
+
+                             tasks are heterogenous (fundamentally different)
+
+                             tasks represent batch jobs
+
+                             tasks are tightly coupled
+
+                             tasks take a long time to run
+
+             
+
+              Big compute architecture (high performance computing)
+
+                             used to solve a class of problem called embarassingly parallel problems (machine learning for e.g)
+
+                             these tasks tend to:
+
+                                           analyse large volumes of data (personalized pages)
+
+                                           perfrom computationally intensive operations (e.g simulation
+chapter 5:
+
+ 
+
+              Pro of storing msg in memory:
+
+                             read and write fast
+
+              con:
+
+                             memory is limited
+
+                                           eventually need to drop msg or store on disk
+
+                             msgs are lost when broker crashes
+
+              some messaging systems like kafka don't store mesgs in memory at all
+
+                             still very fast, so don't assume memory is necessary for latency/throughput
+
+             
+
+              what is a log:
+
+                             append only, ordered sequence of records
+
+                             new msgs appended to end of file
+
+                             delete msgs by segment, not individually
+
+                                           have active/inactive segments
+
+                                           much faster since it avoids cost of iteration
+
+                             retrieve msgs
+
+                                           in memory keep track of msg position in segment, don't iterate
+
+                            
+
+              index (can be in memory or on disk depending on complexity of lookup):
+
+                             lookup table used to look up msg without need for iterationin search
+
+                                           hashtable per segment file to save on memory
+
+                                                          check begins with most recent index, or keep an index of segments alternatively
+
+                                                         
+
+              Time series data:
+
+                             sequence of data points collected over time interval
+
+                             2 types:
+
+                                           gathered at regular intervals:
+
+                                                          e.g system health info
+
+                                           gathered at irregular interval:
+
+                                                          e.g video view events on youtube
+
+                                                         
+
+                             object storage dabatase like s3 is the perfect place to store data log files
+
+                             a low latency database like dynamo db is good for storing indexes
+
+                            
+
+              Simple key-value database
+
+                             CRUD: Create, read, update, delete
+
+                                           Delete is most difficult op
+
+                                                          instead of delete, appeand a tombstone record to database, update key/index to point to tombstone
+
+                                                                        use periodic background thread to actually delete all redundant records
+
+                                           for update, just reuse create logic, update key/index of record
+
+                                          
+
+              B-tree index:
+
+                             useful when you can't keep all keys in memory
+
+                             use binary search to quickly find which segment, in memory, your data's own index is found in
+
+                                           this is recursive where the index of the segment is also found via binary search
+
+                                           allows us to store the index on disk and only load to memory relevant/recently used segments
+
+                             b-tree is a self balancing tree to guarantee logarithmic time complexity, like red-black trees
+
+                            
+
+RocksDB, example of LSM-tree other example is apache cassandra
+
+              memtable : in memory, temp storage of incoming writes often red/black tree
+
+              logfile: on disk, restores memtable in case of crash,append only captures every write
+
+              sorted string table: key/val pairs sorted by key, when memtable is full, the content is flushed here before new memtable is created
+
+              bloom filter: data structures that can quickly tell key is absent from the sorted string table
+
+              compaction: periodicaly delete duplicate keys in background
+
+             
+
+ 
+
+LSM-tree vs B-tree
+
+              lsm-tree:
+
+                             faster writes
+
+                             less write amplification
+
+                             higher write throughput
+
+                             less disk fragmentation due to compaction
+
+              b-tree
+
+                             faster reads
+
+                             less read amplification
+
+                             higher read throughput
+
+                             more predictable performance due to no compaction for e.g
+
+              optimizations can make the choice less obvious than read vs write heavy
+
+              recency of reads
+
+ 
+
+Page Cache:
+
+              2 main problems when using disk heavily
+
+                             too many IO ops
+
+                                           solved by batching
+
+                                                          avoid writting to disk 1 by 1, buffer a bunch of messages
+
+                             too much byte copying
+
+                                           disk cache in linux
+
+                                                          data is first written to page cache and stays there untill it is written to disk
+
+                                                          OS batches writes and minimize movement of disk head
+
+                                           zero-copy read:
+
+                                                          keep message in kernel space, directly to the Network card
+
+                                                                        only works if user space does not need to modify/filter messages
+
+ 
+
+
+Maene, Lincoln D (US)
+Thu, May 14, 5:40 PM
+to me
+
+chapter 6: how to build efficient communication in distributed systems
+
+ 
+
+              messaging systems tend not to use databases
+
+                             you don't need most of what the database does
+
+                                           logfiles and indexes are enough
+
+                                          
+
+              push vs pull
+
+                             pull
+
+                                           consumers pull message from a broker when they need a message
+
+                                           optimized for throughput
+
+                                                          can consume as much or little as you need
+
+                                           better suited for message replay
+
+                                                          very useful for debug for e,g
+
+                                           worse latency
+
+                                                          you query broker all the time
+
+                             push
+
+                                           broker pushes messages to consumers when the message arrives
+
+                                           optimized for latency
+
+                                                          no need to query the broker all the time
+
+                                           client logic is simpler
+
+                             load balancing is easy
+
+                             flow control is difficult
+
+                                           need to make sure consumers are not overwhelmed/starving
+
+                             broker logic is more complicated
+
+                            
+
+                             no clear winner
+
+                            
+
+              Host discovery:
+
+                             if number of hosts is too large to fit confortably in memory, you need to split addresses/identifier into several, smaller chuncks
+
+                                          
+
+                                           can be arranged in a tree
+
+                                                          for example a hierarchy based on top level domain (e.g .com) to the lowest
+
+                                                          build redundancy on every level of the tree             
+
+                                                                        prevent single points of failure
+
+                                                                       
+
+                             there are other criterion that can be used, like the distance/cost of the host
+
+                            
+
+                             Anycast
+
+                                           network routing method
+
+                                           allows multiple hosts to have the same addresses
+
+                                                          routers select the closest/cheapest host
+
+                                           provides high availability
+
+                                           makes it easier to do load balancing
+
+                                           help mitigate ddos
+
+                                           widely used in dns and cdn networks
+
+                                          
+
+              service discovery
+
+                             server side discovery
+
+                                           load balancer or reverse proxy in between services
+
+                                                          knows all service instances
+
+                                           servers send requests to load balancers
+
+                                                          balancer forwards to proper service
+
+                             client side discovery
+
+                                           services register to a registry
+
+                                           servers query registry and pick address to send request to
+
+                                           registry consists of several servers, a cluster,
+
+                                                          use replication for redundancy, availability
+
+                                                          needs heartbeat from services
+
+                                                          services may want to cache results (more reliability)
+
+                             embedding service registry within client app has drawbacks
+
+                                           less versatility since it is tied to your tech stack (e.g lang)
+
+                                                          may be better to keep it an independent process
+
+                                                                        less error prone tho harder to implement and maintain
+
+             
+
+              peer discovery
+
+                             how service registry know about each other
+
+                                           can just be as simple as a list of hostnames shared by the service registry/client machines
+
+                                           simple but not very flexible, need to deploy each time list changes
+
+                             gossip protocolo /epidemic broadcast
+
+                                           when a new machine is added it identifies all other machines in the cluster
+
+                                           seed node
+
+                                                          node known to everyone in the cluster
+
+                                                          seed node shares who it knows with everyone else && vice versa
+
+             
+
+              how to choose network protocolo
+
+                             depends on system requirement
+
+                            
+
+                             UDP
+
+                                           fast but not reliable
+
+                                           choose if performance is critical and some amount of data loss is tolerable like for video
+
+                             TCP
+
+                                           mildly fast but more reliable
+
+                                           not as fast as UDP but choose when reliability is needed
+
+                             HTTPS
+
+                                           Widely adopted, developer friendly
+
+                                           a bit slower than TCP
+
+                                           even more reliable due to ordering and security
+
+                                          
+
+              distributed cache less hardware intensive than a separate cluster of caches
+
+                             Rate limiting/leader election is also more easily solved by cluster of servers
+
+             
+
+              membership problem can be solved with either UDP or tcp
+
+                             next gossip round will fix losses
+
+              distributed cache
+
+                             both tcp and udp work but tcp if loss is a problem
+
+                                           udp more attractive for larger clusters
+
+              rate limiting
+
+                             both tcp and udp work but tcp if loss is a problem
+
+                             udp more attractive for larger clusters
+
+              leader election
+
+                             both tcp and udp work
+
+                             udp more attractive for larger clusters
+
+                            
+
+              Which network protocol will deliver video
+
+                             it depends on lots of factors mobile vs web, browser version etc...
+
+                                           TCP, UDP and HTTP will work
+
+                             UDP good for streaming for eg
+
+                                           throughput more important than accuracy
+
+                             WebRTC uses UDP
+
+                             Websocket protocol uses TCP
+
+             
+
+              adaptive streaming videos now split into buffered segments
+
+                             that's how we can now switch resolutions/languages etc... on the fly
+
+                             manifesto index contains info on segments type available
+
+                            
+
+             
+
+              content delivery network
+
+                             distributed network of servers
+
+                             helps solve read latency, read scalability, network bandwith
+
+                                           users in different parts of the globe
+
+                                           solved by replication and caching
+
+                                           regions: store content closer to users
+
+                             improves reliability bc failover can be the servers in CDN
+
+                             resilience better as well since balancing helps with things like ddos
+
+             
+
+              Push and pull technologies
+
+                             pull options
+
+                                           short polling
+
+                                                          client makes call to server
+
+                                                          server responds immediately
+
+                                                          simple to understand/implement
+
+                                                          difficult to find proper interval for polling
+
+                                                                        can consume a lot of ressources on broker side (authentication, validation etc..)
+
+                                           long polling
+
+                                                          consumer makes call to server
+
+                                                          server only responds if there is something available
+
+                                                                        or wait time expires, then send empty reply
+
+                                                          better for messaging systems
+
+                                                         
+
+                             push options
+
+                                           webSocket
+
+                                                          message based protocol
+
+                                                          workover http port 80 and 443
+
+                                                          reuses tcp connection established for http request
+
+                                                          supports all major browsers and web servers
+
+                                                          overkill when communication is 1 way
+
+                                                          harder to implement
+
+                                           server-sent event
+
+                                                          better for 1 way communication
+
+                                                                        does not really work with 2 way communication
+
+                                                                        limit to number of conections a single browser can have
+
+                                                          easier to implement
+
+                                                         
+
+Large scale push architecture
+
+              ck10 problem :how many concurrent connections can your server handle
+
+                             connection is cheap from client side, very expensive on server side
+
+                             we're now at past ck10M: modern servers can handle millions of connections
+
+                             different from how many concurrent requests you can handle
+
+                             Mail.Ru (3 million concurrent connection)
+
+                                           short polling russian email server, pradigm from 1 ckind of solution to ck10 problem
+
+                             Netflix is another pardigm for solving ck10 problem
+
+                                           using their api gateway zuul
+
+                             need non-blocking IO or scaling long lived connections is a nightmare         
+
+                                           a single thread for all connections
+
+                             server restarts are gonna be a pain:
+
+                                           either force clients to reconnect or migrate their connection to a different server
+
+                             better to use several server rather than 1 god server
+
+                                           failures/crashes  and load balancing easier to handle
